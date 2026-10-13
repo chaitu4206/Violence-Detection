@@ -1,26 +1,30 @@
 # Violence Detection Using BERT
 
-A binary text-classification project that uses a fine-tuned BERT model to classify text as **VIOLENCE** or **NOT VIOLENCE**. The project includes dataset preparation, text preprocessing, model training, evaluation, and interactive prediction.
+A binary text-classification project that fine-tunes **BERT (`bert-base-uncased`)** to classify text as **VIOLENCE** or **NOT VIOLENCE**. The project includes dataset preparation, text preprocessing, model training, evaluation, and interactive prediction.
+
+**Author:** Chaitanya
+**GitHub:** [@chaitu4206](https://github.com/chaitu4206)
+**Repository:** [Violence-Detection](https://github.com/chaitu4206/Violence-Detection)
 
 ## Overview
 
-Online platforms need ways to identify potentially violent language in text. This project fine-tunes the pretrained `bert-base-uncased` transformer model to classify text into two categories.
+Online platforms need ways to identify potentially violent language. This project fine-tunes a pretrained BERT transformer model for binary text classification using the `kcrl/Violence` dataset from Hugging Face.
 
 ### Features
 
-- Download the violence dataset using Hugging Face Datasets
-- Convert the original three-class labels into a binary classification task
-- Remove missing records and duplicate text entries during dataset preparation
+- Download and prepare the dataset using Hugging Face Datasets
+- Convert three original label categories into a binary classification task
+- Remove missing records and duplicate text entries
 - Clean URLs and normalize whitespace
 - Tokenize text using the BERT tokenizer
 - Fine-tune BERT for sequence classification
-- Evaluate the model using precision, recall, F1-score, accuracy, and a confusion matrix
-- Run interactive predictions from the command line
-- Store the trained model weights using Git Large File Storage (Git LFS)
+- Evaluate using precision, recall, F1-score, accuracy, and a confusion matrix
+- Perform interactive command-line predictions
+- Track trained model weights using Git Large File Storage (Git LFS)
 
 ## Model Performance
 
-The saved evaluation report in `results/violence/classification_report.txt` records the following performance on a test set of 500 examples.
+The following results are taken from the saved evaluation report for **500 test examples**.
 
 | Metric | NOT VIOLENCE | VIOLENCE |
 |---|---:|---:|
@@ -29,7 +33,7 @@ The saved evaluation report in `results/violence/classification_report.txt` reco
 | F1-score | 70.75% | 61.07% |
 | Test support | 265 | 235 |
 
-### Overall metrics
+### Overall Metrics
 
 | Metric | Result |
 |---|---:|
@@ -39,36 +43,31 @@ The saved evaluation report in `results/violence/classification_report.txt` reco
 | Macro F1-score | 65.91% |
 | Weighted F1-score | 66.20% |
 
-The model correctly classified 333 of the 500 test examples according to the saved report.
-
-**Interpretation:** The model identifies non-violent text more reliably than violent text in this evaluation. Its violence-class recall is 55.74%, meaning it misses a substantial proportion of violent examples. These results indicate that the classifier needs further improvement before it should be considered for consequential moderation decisions.
+The model correctly classified **333 out of 500** test examples.
 
 ### Confusion Matrix
 
-The confusion matrix uses the following class order:
-
-- `0`: NOT VIOLENCE
-- `1`: VIOLENCE
+Class order: `0 = NOT VIOLENCE`, `1 = VIOLENCE`.
 
 | Actual / Predicted | NOT VIOLENCE | VIOLENCE |
 |---|---:|---:|
 | NOT VIOLENCE | 202 | 63 |
 | VIOLENCE | 104 | 131 |
 
-![Violence Classification Confusion Matrix](results/violence/confusion_matrix.png)
+![Violence classification confusion matrix](results/violence/confusion_matrix.png)
 
-The matrix indicates that 104 of the 235 violent examples in the test set were classified as non-violent. This is an important limitation when interpreting the model's predictions.
+The model misclassified 104 of the 235 violent examples as non-violent. Its violence-class recall is 55.74%, indicating that it misses a substantial proportion of positive examples. These results show that further improvement and validation are necessary before consequential moderation use.
 
 ## Technology Stack
 
 - **Language:** Python
 - **Deep learning:** PyTorch
-- **Transformer model:** Hugging Face Transformers, BERT
+- **Transformer model:** Hugging Face Transformers (BERT)
 - **Dataset handling:** Hugging Face Datasets
 - **Data processing:** Pandas, NumPy
 - **Evaluation:** Scikit-learn
 - **Visualization:** Matplotlib
-- **Version control:** Git and Git LFS
+- **Version control and model storage:** Git, Git LFS
 
 ## Project Structure
 
@@ -96,21 +95,19 @@ Violence-Detection/
         └── confusion_matrix.png
 ```
 
-The `data/` directory is generated locally. It contains the downloaded source dataset and the prepared training, validation, and test CSV files. The generated `test_predictions.csv` is excluded from version control.
+The `data/` directory is generated locally and contains the downloaded dataset and prepared training, validation, and test CSV files. The generated `test_predictions.csv` is excluded from version control.
 
 ## Dataset
 
-The project downloads the dataset identified as `kcrl/Violence` on Hugging Face.
+This project uses the [`kcrl/Violence`](https://huggingface.co/datasets/kcrl/Violence) dataset hosted on Hugging Face.
 
-Dataset page: https://huggingface.co/datasets/kcrl/Violence
-
-Run the dataset download script to retrieve and prepare the source data:
+Download and prepare the source data:
 
 ```bash
 python download_dataset.py
 ```
 
-The script loads the available dataset splits, selects the `text` and `label` columns, concatenates the splits, removes missing values and duplicate text, and saves the resulting dataset to:
+The download script loads the available dataset splits, selects the `text` and `label` columns, combines the splits, removes missing values and duplicate text, and saves the prepared source data to:
 
 ```text
 data/violence/violence_data.csv
@@ -118,7 +115,7 @@ data/violence/violence_data.csv
 
 ### Label Mapping
 
-The download script converts the original three-class labels into a binary classification task.
+The original three-class labels are converted into a binary classification task.
 
 | Original label | Final label | Meaning |
 |---|---:|---|
@@ -126,7 +123,7 @@ The download script converts the original three-class labels into a binary class
 | 1 — Passive Violence | 1 | VIOLENCE |
 | 2 — Direct Violence | 1 | VIOLENCE |
 
-This means both passive and direct violence are grouped into the same positive class.
+Both passive and direct violence are grouped into the same positive class.
 
 ### Dataset Preparation and Splitting
 
@@ -134,7 +131,7 @@ The `dataset.py` script:
 
 1. Loads `data/violence/violence_data.csv`.
 2. Checks for the required `text` and `label` columns.
-3. Removes missing values and retains only labels 0 and 1.
+3. Removes missing values and retains labels 0 and 1.
 4. Converts text to strings and labels to integers.
 5. Shuffles the data using random state 42.
 6. Limits the working dataset to a maximum of 5,000 samples.
@@ -142,15 +139,13 @@ The `dataset.py` script:
 
 The intended split is:
 
-| Split | Proportion | Approximate size when using 5,000 records |
+| Split | Proportion | Approximate size with 5,000 records |
 |---|---:|---:|
 | Training | 80% | 4,000 |
 | Validation | 10% | 500 |
 | Testing | 10% | 500 |
 
-The actual split sizes depend on the number of usable records available.
-
-The generated CSV files are saved to `data/violence/`:
+Actual sizes depend on the number of usable records. The generated CSV files are stored in `data/violence/`:
 
 - `train.csv`
 - `validation.csv`
@@ -158,7 +153,7 @@ The generated CSV files are saved to `data/violence/`:
 
 ## Text Preprocessing
 
-The `preprocessing.py` module defines text-cleaning and CSV-loading functions.
+The `preprocessing.py` module provides text-cleaning and CSV-loading functions.
 
 The `clean_text()` function:
 
@@ -167,7 +162,7 @@ The `clean_text()` function:
 - Replaces repeated whitespace with a single space
 - Removes leading and trailing whitespace
 
-The BERT tokenizer truncates sequences and pads them to a maximum length of 64 tokens.
+The BERT tokenizer pads and truncates sequences to a maximum length of **64 tokens**.
 
 ## Installation
 
@@ -176,16 +171,16 @@ The BERT tokenizer truncates sequences and pads them to a maximum length of 64 t
 - Python compatible with the pinned package versions
 - Git
 - Git LFS
-- Internet access for downloading the dataset and pretrained model when needed
+- Internet access for downloading the dataset and any required pretrained model files
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/v78135236-dev/Violence-Detection.git
+git clone https://github.com/chaitu4206/Violence-Detection.git
 cd Violence-Detection
 ```
 
-### 2. Create a virtual environment
+### 2. Create a Virtual Environment
 
 On Windows PowerShell:
 
@@ -194,14 +189,14 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-### 3. Install dependencies
+### 3. Install Dependencies
 
 ```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-The repository pins the following dependency versions:
+The project specifies these dependency versions:
 
 ```text
 torch==2.7.0
@@ -214,16 +209,16 @@ matplotlib==3.10.6
 accelerate==1.14.0
 ```
 
-### 4. Retrieve the trained model
+### 4. Retrieve the Trained Model
 
-The final model weights are tracked using Git LFS. Install Git LFS and retrieve the model files:
+The trained model weights are tracked using Git LFS. Install Git LFS and retrieve the files:
 
 ```bash
 git lfs install
 git lfs pull
 ```
 
-Ensure `models/violence_bert/model.safetensors` contains the actual model weights rather than an LFS pointer.
+Verify that `models/violence_bert/model.safetensors` contains the actual model weights, rather than an LFS pointer.
 
 ## Training
 
@@ -239,7 +234,7 @@ Then train the model:
 python train.py
 ```
 
-The training script loads the prepared dataset, creates the stratified splits, tokenizes the text, fine-tunes BERT, and saves the model and tokenizer.
+The training pipeline prepares the dataset splits, tokenizes the text, fine-tunes BERT, and saves the model and tokenizer.
 
 ### Training Configuration
 
@@ -257,27 +252,25 @@ The training script loads the prepared dataset, creates the stratified splits, t
 | Best-model selection | Lowest evaluation loss |
 | Checkpoint retention | 1 |
 
-The model and tokenizer are saved to:
+The trained model and tokenizer are saved to:
 
 ```text
 models/violence_bert/
 ```
 
-Training can take considerable time, especially when running on a CPU.
+Training may take considerable time, especially on a CPU.
 
 ## Evaluation
 
-Run evaluation after the dataset splits and trained model are available:
+Run the evaluation script after the dataset splits and trained model are available:
 
 ```bash
 python evaluate.py
 ```
 
-The evaluation script loads `data/violence/test.csv`, tokenizes the test examples, loads the saved model, generates predictions, and calculates classification metrics.
+The script loads `data/violence/test.csv`, tokenizes the test examples, loads the trained model, generates predictions, and calculates classification metrics.
 
-The script generates the following artifacts:
-
-| File | Purpose |
+| Output | Purpose |
 |---|---|
 | `results/violence/classification_report.txt` | Precision, recall, F1-score, support, and accuracy |
 | `results/violence/confusion_matrix.png` | Visualization of actual versus predicted labels |
@@ -285,19 +278,19 @@ The script generates the following artifacts:
 
 The prediction CSV is excluded from Git through `.gitignore`.
 
-**Reproducibility note:** The metrics documented above come from the saved report in this repository. Retraining the model or changing the dataset may produce different results. Regenerate the report before updating the performance figures.
+**Reproducibility note:** The published metrics above come from the saved report. Retraining the model or changing the dataset may produce different results. Regenerate the report before updating the performance figures.
 
 ## Interactive Inference
 
-Run the interactive classifier:
+Start the interactive classifier:
 
 ```bash
 python inference.py
 ```
 
-Enter a text sample at the prompt. Type `exit` to stop.
+Enter text at the prompt. Type `exit` to stop.
 
-Example session (illustrative output only):
+Example session — illustrative output only:
 
 ```text
 =======================================================
@@ -317,7 +310,7 @@ NOT VIOLENCE: 0.XXXX
 VIOLENCE: 0.XXXX
 ```
 
-The prediction and probabilities depend on the supplied text and the trained model. The example above does not represent a verified prediction.
+The output depends on the input and trained model. This example does not represent a verified prediction.
 
 ### Use the Prediction Function in Python
 
@@ -337,37 +330,40 @@ print("Probabilities:", probabilities)
 
 The `predict()` function returns:
 
-- The predicted class ID (`0` or `1`)
-- The predicted class confidence
+- Predicted class ID (`0` or `1`)
+- Predicted class confidence
 - Softmax probabilities ordered as NOT VIOLENCE, then VIOLENCE
 
-Confidence is a model-generated probability, not a guarantee that a classification is correct.
+Confidence is a model-generated probability, not a guarantee that the prediction is correct.
 
 ## Limitations and Responsible Use
 
-- The saved evaluation accuracy is 66.60%; performance is not yet strong enough to support high-stakes decisions without further validation.
+- The saved evaluation accuracy is 66.60%; the model is not sufficiently validated for high-stakes decisions.
 - Violence-class recall is 55.74%, so the model misses a meaningful proportion of violent examples.
-- The training pipeline uses at most 5,000 records, which limits the amount of data used for fine-tuning.
-- The dataset's labels and source distribution may not represent all forms of violent language, contexts, dialects, or languages.
-- Context, quotation, satire, fictional dialogue, and discussion of violence can be difficult to classify from text alone.
-- The model should not be treated as a definitive judge of a person's intent or as the sole basis for content removal or disciplinary action.
+- Fine-tuning uses at most 5,000 records, limiting the amount of training data.
+- Dataset labels and source distribution may not represent every form of violent language, context, dialect, or language.
+- Quotation, satire, fictional dialogue, and discussion of violence can be difficult to classify from text alone.
+- The model should not be treated as a definitive judge of a person's intent or used as the sole basis for content removal or disciplinary action.
 
-For practical moderation use, evaluate the model on representative, independently collected data and include appropriate human review and appeal processes.
+For practical moderation, evaluate the model on representative, independently collected data and include appropriate human review and appeal processes.
 
 ## Future Improvements
 
-- Increase and diversify the training dataset.
-- Improve recall for the violence class.
-- Compare against simpler baseline models.
-- Tune decision thresholds using validation data.
-- Evaluate performance across different text sources and language varieties.
-- Add automated tests for preprocessing and inference.
-- Build an API or interface for interactive demonstrations.
-- Track model versions and evaluation metrics across experiments.
+- Increase and diversify the training dataset
+- Improve recall for the violence class
+- Compare against simpler baseline models
+- Tune decision thresholds using validation data
+- Evaluate performance across different text sources and language varieties
+- Add automated tests for preprocessing and inference
+- Build an API or interface for interactive demonstrations
+- Track model versions and evaluation metrics across experiments
 
 ## Author and Repository
 
-**GitHub repository:** https://github.com/v78135236-dev/Violence-Detection
+**Author:** Chaitanya
+
+- GitHub profile: https://github.com/chaitu4206
+- Project repository: https://github.com/chaitu4206/Violence-Detection
 
 ## License
 
